@@ -1,0 +1,82 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: NbDQKegGMSNiDcBucWbxfCpxdXVorfhi
+      MYSQL_DATABASE: railway
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ecommerce_network
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: marcelintingougoui3
+      MONGO_INITDB_ROOT_PASSWORD: cagKxCWdDrWqt8md
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: marcelintingougoui3
+      ME_CONFIG_MONGODB_ADMINPASSWORD: cagKxCWdDrWqt8md
+      ME_CONFIG_MONGODB_URL: mongodb://marcelintingougoui3:cagKxCWdDrWqt8md@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+ 
+  products-api:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    container_name: products_api
+    environment:
+      DATABASE_URL: mysql://root:NbDQKegGMSNiDcBucWbxfCpxdXVorfhi@mysql:3306/railway
+    ports:
+      - "3030:3030"
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce_network
+
+  newsletter-api:
+    build:
+      context: ./newsletter
+      dockerfile: Dockerfile
+    container_name: newsletter_api
+    environment:
+      DATABASE_URL: mongodb+srv://marcelintingougoui3:cagKxCWdDrWqt8md@email.rpajjqv.mongodb.net/email?retryWrites=true&w=majority&appName=email
+    ports:
+      - "3232:3232"
+    depends_on:
+      - mongo
+      - mongo-express
+    networks:
+      - ecommerce_network
+  api-getway:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    container_name: api_getway
+    environment:
+      PRODUCT_SERVICE_URL: "http://product-api:3030"
+      NEWSLETTER_SERVICE_URL: "http://newsletter-api:3232"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - products-api
+      - newsletter-api
+    networks:
+      - ecommerce_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  ecommerce_network:
+    driver: bridge

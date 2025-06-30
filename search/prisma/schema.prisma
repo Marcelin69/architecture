@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model panier {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  productId Int
+
+  @@index([productId], map: "Panier_productId_fkey")
+}
+
+model product {
+  id          Int     @id @default(autoincrement())
+  name        String?
+  description String?
+  pricd       Float?
+}
