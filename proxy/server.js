@@ -62,7 +62,7 @@ app.use("/api/product/add-product", proxyProduct);
 app.use("/api/news/add-news", proxyNewsLetter);
 app.use("/api/news/get-news", proxyNewsLetter);
 
-app.("/api/panier/add", proxyPanier);
+app.use("/api/panier/add", proxyPanier);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
