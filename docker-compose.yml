@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: api_getway
     environment:
-      PRODUCT_SERVICE_URL: "http://product-api:3030"
+      PRODUCT_SERVICE_URL: "http://products-api:3030"
       NEWSLETTER_SERVICE_URL: "http://newsletter-api:3232"
     ports:
       - "3001:3001"

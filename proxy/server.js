@@ -1,7 +1,7 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const express = require("express");
 const app = express();
-require('dotenv').config();
+require("dotenv").config();
 const PORT = process.env.PORT || 3001;
 
 app.use(require("express").urlencoded({ extended: true }));
@@ -10,10 +10,9 @@ const proxyProduct = createProxyMiddleware({
   target: process.env.PRODUCT_SERVICE_URL || "http://localhost:3030",
   changeOrigin: true,
   // pathRewrite: path => path,
- 
+
   pathRewrite: {
-    "^/api/product/get-all-products": "/api/product/get-all-products",
-    "^/api/product/add-product": "/api/product/add-product",
+    "^/api/product": "/api/product", // Supprime le préfixe pour qu’il reste `/get-all-products`
   },
   onProxyReq: (proxyReq, req, res) => {
     // You can modify the request here if needed
@@ -56,7 +55,7 @@ const proxyPanier = createProxyMiddleware({
   },
 });
 
-app.use("api/product/get-all-products", proxyProduct);
+app.use("/api/product/get-all-products", proxyProduct);
 app.use("/api/product/add-product", proxyProduct);
 
 app.use("/api/news/add-news", proxyNewsLetter);
