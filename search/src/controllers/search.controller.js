@@ -28,8 +28,11 @@ exports.search = async (req, res) => {
           ],
         },
       });
-      console.log(`Résultats de la base de données pour la requête : ${query}`, dbResults);
-      
+      console.log(
+        `Résultats de la base de données pour la requête : ${query}`,
+        dbResults
+      );
+
       return dbResults.map((item) => ({
         id: item.id,
         name: item.name,

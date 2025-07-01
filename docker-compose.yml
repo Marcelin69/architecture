@@ -11,24 +11,27 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - ecommerce_network
-  mongo:
-    image: mongo
-    restart: always
+  mongodb:
+    image: mongo:latest
+    container_name: ecommerce_mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: marcelintingougoui3
       MONGO_INITDB_ROOT_PASSWORD: cagKxCWdDrWqt8md
-
-  mongo-express:
-    image: mongo-express
-    restart: always
     ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: marcelintingougoui3
-      ME_CONFIG_MONGODB_ADMINPASSWORD: cagKxCWdDrWqt8md
-      ME_CONFIG_MONGODB_URL: mongodb://marcelintingougoui3:cagKxCWdDrWqt8md@mongo:27017/
-      ME_CONFIG_BASICAUTH: false
- 
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ecommerce_network
+  redis:
+    image: redis
+    container_name: redis_db
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data/db
+    networks:
+      - ecommerce_network
   products-api:
     build:
       context: ./product
@@ -42,6 +45,25 @@ services:
       - mysql
     networks:
       - ecommerce_network
+    command: >
+      sh -c "npx prisma generate && npx prisma db push && npm run start"
+  search-api:
+    build:
+      context: ./search
+      dockerfile: Dockerfile
+    container_name: search_api
+    environment:
+      DATABASE_URL: mysql://root:NbDQKegGMSNiDcBucWbxfCpxdXVorfhi@mysql:3306/railway
+      REDIS_HOST: redis
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ecommerce_network
+    command: >
+      sh -c "npx prisma generate && npx prisma db push && npm run start"
 
   newsletter-api:
     build:
@@ -49,12 +71,11 @@ services:
       dockerfile: Dockerfile
     container_name: newsletter_api
     environment:
-      DATABASE_URL: mongodb+srv://marcelintingougoui3:cagKxCWdDrWqt8md@email.rpajjqv.mongodb.net/email?retryWrites=true&w=majority&appName=email
+      DATABASE_URL: mongodb://marcelintingougoui3:cagKxCWdDrWqt8md@mongodb:27017/email?authSource=admin
     ports:
       - "3232:3232"
     depends_on:
-      - mongo
-      - mongo-express
+      - mongodb
     networks:
       - ecommerce_network
   api-getway:
@@ -65,16 +86,22 @@ services:
     environment:
       PRODUCT_SERVICE_URL: "http://products-api:3030"
       NEWSLETTER_SERVICE_URL: "http://newsletter-api:3232"
+      SEARCH_SERVICE_URL: "http://search-api:3000"
     ports:
       - "3001:3001"
     depends_on:
       - products-api
       - newsletter-api
+      - search-api
     networks:
       - ecommerce_network
 
 volumes:
   mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

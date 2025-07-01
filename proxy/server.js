@@ -27,8 +27,7 @@ const proxyNewsLetter = createProxyMiddleware({
   target: process.env.NEWSLETTER_SERVICE_URL || "http://localhost:3232",
   changeOrigin: true,
   pathRewrite: {
-    "^/api/news/add_news": "/api/news/add_news",
-    "^/api/news/get_news": "/api/news/get_news",
+    "^/api/news": "/api/news",
   },
   onProxyReq: (proxyReq, req, res) => {
     // You can modify the request here if needed
@@ -39,11 +38,26 @@ const proxyNewsLetter = createProxyMiddleware({
     res.status(500).send("Proxy error");
   },
 });
-const proxyPanier = createProxyMiddleware({
-  target: "http://localhost:3000",
+// const proxyPanier = createProxyMiddleware({
+//   target: "http://localhost:3000",
+//   changeOrigin: true,
+//   pathRewrite: {
+//     "^api/panier/add": "api/panier/add",
+//   },
+//   onProxyReq: (proxyReq, req, res) => {
+//     // You can modify the request here if needed
+//     console.log(`Proxying request: ${req.method} ${req.url}`);
+//   },
+//   onError: (err, req, res) => {
+//     console.error("Proxy error:", err);
+//     res.status(500).send("Proxy error");
+//   },
+// });
+const proxySearch = createProxyMiddleware({
+  target: process.env.SEARCH_SERVICE_URL || "http://localhost:3000",
   changeOrigin: true,
   pathRewrite: {
-    "^api/panier/add": "api/panier/add",
+    "^/api/search": "/api/search",
   },
   onProxyReq: (proxyReq, req, res) => {
     // You can modify the request here if needed
@@ -61,7 +75,8 @@ app.use("/api/product/add-product", proxyProduct);
 app.use("/api/news/add-news", proxyNewsLetter);
 app.use("/api/news/get-news", proxyNewsLetter);
 
-app.use("/api/panier/add", proxyPanier);
+// app.use("/api/panier/add", proxyPanier);
+app.use("/api/search/search", proxySearch);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
